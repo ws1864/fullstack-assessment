@@ -21,20 +21,57 @@ interface Product {
 
 export default function ProductPage() {
   const searchParams = useSearchParams();
-  const productParam = searchParams.get('product');
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
+  // Fix Bug 1 & Bug 2
+  const sku = searchParams.get("sku") ?? "";
+  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
 
+  // Fix Bug 1: fetch the product via sku from API rather than parsing the full JSON details
   useEffect(() => {
-    if (productParam) {
-      try {
-        const parsedProduct = JSON.parse(productParam);
-        setProduct(parsedProduct);
-      } catch (error) {
-        console.error('Failed to parse product data:', error);
-      }
+    if (!sku) {
+      setStatus("error");
+      setError("sku not found");
+      return;
     }
-  }, [productParam]);
+    setStatus("loading");
+    fetch(`/api/products/${encodeURIComponent(sku)}`)
+      .then(async res => {
+        if (!res.ok) {
+          throw new Error("Loading product Failed");
+        }
+        return res.json();
+      })
+      .then((data: Product) => {
+        setProduct(data);
+        setStatus("success");
+      })
+      .catch(err => {
+        setError(err?.message);
+        setStatus("error");
+      });
+  }, [sku]);
+
+
+  // Fix Bug 2: add a loading screen when fetching the product detail
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <Link href="/">
+            <Button variant="ghost" className="mb-4">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Products
+            </Button>
+          </Link>
+          <Card className="p-8">
+            <p className="text-center text-muted-foreground">Loading...</p>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (

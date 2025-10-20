@@ -166,7 +166,8 @@ export default function Home() {
                   key={product.stacklineSku}
                   href={{
                     pathname: "/product",
-                    query: { product: JSON.stringify(product) },
+                    // Fix Bug 1: pass the sku instead of full JSON product object 
+                    query: { sku: product.stacklineSku },
                   }}
                 >
                   <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
