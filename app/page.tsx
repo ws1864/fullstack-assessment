@@ -56,6 +56,7 @@ export default function Home() {
       setSelectedSubCategory(undefined);
       return;
     }
+
     // Fix Bug 3: pass the selectedCategory to fetch its subcategories
       fetch(`/api/subcategories?category=${encodeURIComponent(selectedCategory)}`)
         .then((res) => {
@@ -101,10 +102,13 @@ export default function Home() {
                 className="pl-10"
               />
             </div>
-
+            {/* Fix Bug 4: clear subcategory every time we change the category */}
             <Select
               value={selectedCategory}
-              onValueChange={(value) => setSelectedCategory(value || undefined)}
+              onValueChange={(value) => {
+                setSelectedCategory(value || undefined)
+                setSelectedSubCategory(undefined)
+              }}
             >
               <SelectTrigger className="w-full md:w-[200px]">
                 <SelectValue placeholder="All Categories" />
@@ -137,14 +141,14 @@ export default function Home() {
                 </SelectContent>
               </Select>
             )}
-
+            {/* Fix Bug 5: reset filters (category and subcategory) to default when "Clear Filters" button is clicked */}
             {(search || selectedCategory || selectedSubCategory) && (
               <Button
                 variant="outline"
                 onClick={() => {
                   setSearch("");
-                  setSelectedCategory(undefined);
-                  setSelectedSubCategory(undefined);
+                  setSelectedCategory("");
+                  setSelectedSubCategory("");
                 }}
               >
                 Clear Filters
