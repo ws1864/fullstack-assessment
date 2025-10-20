@@ -51,14 +51,22 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (selectedCategory) {
-      fetch(`/api/subcategories`)
-        .then((res) => res.json())
-        .then((data) => setSubCategories(data.subCategories));
-    } else {
+    if (!selectedCategory) {
       setSubCategories([]);
       setSelectedSubCategory(undefined);
+      return;
     }
+    // Fix Bug 3: pass the selectedCategory to fetch its subcategories
+      fetch(`/api/subcategories?category=${encodeURIComponent(selectedCategory)}`)
+        .then((res) => {
+          if (!res.ok) throw new Error("Error: failed to load subcategories");
+          return res.json();
+        })
+        .then((data) => setSubCategories(data.subCategories))
+        .catch((_err) => {
+          setSubCategories([])
+          setSelectedSubCategory(undefined);
+        });
   }, [selectedCategory]);
 
   useEffect(() => {
