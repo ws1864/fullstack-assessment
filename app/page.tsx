@@ -44,12 +44,21 @@ export default function Home() {
   >(undefined);
   const [loading, setLoading] = useState(true);
 
+  // Fix Bug 7: Add error handling
   useEffect(() => {
     fetch("/api/categories")
-      .then((res) => res.json())
-      .then((data) => setCategories(data.categories));
+    .then((res) => {
+      if (!res.ok) throw new Error("Error: failed to load categories");
+      return res.json();
+    })
+    .then((data) => setCategories(data.categories))
+    .catch((error) => {
+      setCategories([]);
+      console.error("Error: failed to load categories", error);
+    });
   }, []);
 
+  // Fix Bug 7: add error handling
   useEffect(() => {
     if (!selectedCategory) {
       setSubCategories([]);
@@ -64,9 +73,10 @@ export default function Home() {
           return res.json();
         })
         .then((data) => setSubCategories(data.subCategories))
-        .catch((_err) => {
+        .catch((error) => {
           setSubCategories([])
           setSelectedSubCategory(undefined);
+          console.error("Error: failed to load subcategories", error);
         });
   }, [selectedCategory]);
 
@@ -78,11 +88,20 @@ export default function Home() {
     if (selectedSubCategory) params.append("subCategory", selectedSubCategory);
     params.append("limit", "20");
 
+    // Fix Bug 7: Add error handling
     fetch(`/api/products?${params}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Error: failed to search products");
+        return res.json();
+      })
       .then((data) => {
         setProducts(data.products);
         setLoading(false);
+      })
+      .catch((error) => {
+        setProducts([]);
+        setLoading(false);
+        console.error("Error: failed to search products", error);
       });
   }, [search, selectedCategory, selectedSubCategory]);
 
